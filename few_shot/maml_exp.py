@@ -5,16 +5,14 @@ from torch.utils.data import DataLoader
 from torch import nn
 import argparse
 
-from few_shot.datasets import OmniglotDataset, MiniImageNet
-from few_shot.core import NShotTaskSampler, create_nshot_task_label, EvaluateFewShot
-from few_shot.maml import meta_gradient_step
-from few_shot.models import FewShotClassifier
-from few_shot.train import fit
-from few_shot.callbacks import *
-from few_shot.utils import setup_dirs
+from datasets import OmniglotDataset, MiniImageNet
+from core import NShotTaskSampler, create_nshot_task_label, EvaluateFewShot
+from maml import meta_gradient_step
+from models import FewShotClassifier
+from train import fit
+from callbacks import *
+from utils import setup_dirs
 from config import PATH
-
-sys.exit()
 
 setup_dirs()
 assert torch.cuda.is_available()
@@ -26,7 +24,7 @@ torch.backends.cudnn.benchmark = True
 # Parameters #
 ##############
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset')
+parser.add_argument('--dataset', default='omniglot', help="dataset: {'omniglot', 'miniImageNet'}. Whether to use the Omniglot or miniImagenet dataset")
 parser.add_argument('--n', default=1, type=int)
 parser.add_argument('--k', default=5, type=int)
 parser.add_argument('--q', default=1, type=int)  # Number of examples per class to calculate meta gradients with

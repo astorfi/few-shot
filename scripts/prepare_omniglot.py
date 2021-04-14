@@ -15,11 +15,32 @@ import zipfile
 import shutil
 import os
 
-from config import DATA_PATH
-from few_shot.utils import mkdir, rmdir
+def mkdir(dir):
+    """Create a directory, ignoring exceptions
+
+    # Arguments:
+        dir: Path of directory to create
+    """
+    try:
+        os.mkdir(dir)
+    except:
+        pass
+
+
+def rmdir(dir):
+    """Recursively remove a directory and contents, ignoring exceptions
+
+   # Arguments:
+       dir: Path of directory to recursively remove
+   """
+    try:
+        shutil.rmtree(dir)
+    except:
+        pass
 
 
 # Parameters
+DATA_PATH = os.path.expanduser('~/data')
 dataset_zip_files = ['images_background.zip', 'images_evaluation.zip']
 raw_omniglot_location = DATA_PATH + '/Omniglot_Raw/'
 prepared_omniglot_location = DATA_PATH + '/Omniglot/'

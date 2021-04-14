@@ -3,7 +3,7 @@ from torch.nn import Module
 from torch.utils.data import DataLoader
 from typing import Callable, List, Union
 
-from few_shot.metrics import NAMED_METRICS
+from metrics import NAMED_METRICS
 
 
 def evaluate(model: Module, dataloader: DataLoader, prepare_batch: Callable, metrics: List[Union[str, Callable]],

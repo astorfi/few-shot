@@ -13,9 +13,32 @@ import numpy as np
 import shutil
 import os
 
-from config import DATA_PATH
-from few_shot.utils import mkdir, rmdir
+def mkdir(dir):
+    """Create a directory, ignoring exceptions
 
+    # Arguments:
+        dir: Path of directory to create
+    """
+    try:
+        os.mkdir(dir)
+    except:
+        pass
+
+
+def rmdir(dir):
+    """Recursively remove a directory and contents, ignoring exceptions
+
+   # Arguments:
+       dir: Path of directory to recursively remove
+   """
+    try:
+        shutil.rmtree(dir)
+    except:
+        pass
+
+
+# Parameters
+DATA_PATH = os.path.expanduser('~/data')
 
 # Clean up folders
 rmdir(DATA_PATH + '/miniImageNet/images_background')

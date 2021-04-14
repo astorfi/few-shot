@@ -3,8 +3,8 @@ from typing import List, Iterable, Callable, Tuple
 import numpy as np
 import torch
 
-from few_shot.metrics import categorical_accuracy
-from few_shot.callbacks import Callback
+from metrics import categorical_accuracy
+from callbacks import Callback
 
 
 class NShotTaskSampler(Sampler):

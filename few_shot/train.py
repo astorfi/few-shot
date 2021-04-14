@@ -8,8 +8,8 @@ from torch.nn import Module
 from torch.utils.data import DataLoader
 from typing import Callable, List, Union
 
-from few_shot.callbacks import DefaultCallback, ProgressBarLogger, CallbackList, Callback
-from few_shot.metrics import NAMED_METRICS
+from callbacks import DefaultCallback, ProgressBarLogger, CallbackList, Callback
+from metrics import NAMED_METRICS
 
 
 def gradient_step(model: Module, optimiser: Optimizer, loss_fn: Callable, x: torch.Tensor, y: torch.Tensor, **kwargs):

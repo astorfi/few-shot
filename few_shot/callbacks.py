@@ -10,7 +10,7 @@ import os
 import csv
 import io
 
-from few_shot.eval import evaluate
+from eval import evaluate
 
 
 class CallbackList(object):
