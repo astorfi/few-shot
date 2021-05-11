@@ -135,6 +135,44 @@ class FewShotClassifier(nn.Module):
 
         return x
 
+class FewShotClassifierPlasma(nn.Module):
+    def __init__(self, num_input_channels: int, k_way: int, final_layer_size: int = 64):
+        """Creates a few shot classifier as used in MAML.
+
+        This network should be identical to the one created by `get_few_shot_encoder` but with a
+        classification layer on top.
+
+        # Arguments:
+            num_input_channels: Number of color channels the model expects input data to contain. Omniglot = 1,
+                miniImageNet = 3
+            k_way: Number of classes the model will discriminate between
+            final_layer_size: 64 for Omniglot, 1600 for miniImageNet
+        """
+        super(FewShotClassifierPlasma, self).__init__()
+        kernel_size = 5
+        self.conv1 = nn.Conv1d(num_input_channels, 1, kernel_size=kernel_size, padding=int(np.floor(kernel_size / 2)))
+        self.fc1 = nn.Linear(3859, 2000)
+        self.fc2 = nn.Linear(2000, k_way)
+
+        self.logits = nn.Linear(final_layer_size, k_way)
+
+    def forward(self, x):
+        x = F.selu(self.conv1(x))
+        x = x.view(-1, x.shape[2])
+        x = F.selu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+    def functional_forward(self, x, weights):
+        """Applies the same forward pass using PyTorch functional operators using a specified set of weights."""
+
+        x = F.selu(F.conv1d(x, weights[f'conv1.0.weight'], weights[f'conv1.0.bias']))
+        x = x.view(-1, x.shape[2])
+        x = F.linear(x, weights['logits1.weight'], weights['logits1.bias'])
+        x = F.linear(x, weights['logits2.weight'], weights['logits2.bias'])
+
+        return x
+
 
 class MatchingNetwork(nn.Module):
     def __init__(self, n: int, k: int, q: int, fce: bool, num_input_channels: int,

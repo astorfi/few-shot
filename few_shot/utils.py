@@ -13,7 +13,7 @@ def mkdir(dir):
         dir: Path of directory to create
     """
     try:
-        os.mkdir(dir)
+        os.makedirs(dir)
     except:
         pass
 

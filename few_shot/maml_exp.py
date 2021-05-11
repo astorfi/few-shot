@@ -5,10 +5,10 @@ from torch.utils.data import DataLoader
 from torch import nn
 import argparse
 
-from datasets import OmniglotDataset, MiniImageNet
+from datasets import OmniglotDataset, MiniImageNet, DummyDataset
 from core import NShotTaskSampler, create_nshot_task_label, EvaluateFewShot
 from maml import meta_gradient_step
-from models import FewShotClassifier
+from models import FewShotClassifier, FewShotClassifierPlasma
 from train import fit
 from callbacks import *
 from utils import setup_dirs
@@ -24,7 +24,7 @@ torch.backends.cudnn.benchmark = True
 # Parameters #
 ##############
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', default='omniglot', help="dataset: {'omniglot', 'miniImageNet'}. Whether to use the Omniglot or miniImagenet dataset")
+parser.add_argument('--dataset', default='Dummy', help="dataset: {'omniglot', 'miniImageNet'}. Whether to use the Omniglot or miniImagenet dataset")
 parser.add_argument('--n', default=1, type=int)
 parser.add_argument('--k', default=5, type=int)
 parser.add_argument('--q', default=1, type=int)  # Number of examples per class to calculate meta gradients with
@@ -44,10 +44,17 @@ if args.dataset == 'omniglot':
     dataset_class = OmniglotDataset
     fc_layer_size = 64
     num_input_channels = 1
+    meta_model = FewShotClassifier(num_input_channels, args.k, fc_layer_size).to(device, dtype=torch.double)
 elif args.dataset == 'miniImageNet':
     dataset_class = MiniImageNet
     fc_layer_size = 1600
     num_input_channels = 3
+    meta_model = FewShotClassifier(num_input_channels, args.k, fc_layer_size).to(device, dtype=torch.double)
+elif args.dataset == 'Dummy':
+    dataset_class = DummyDataset
+    fc_layer_size = 2000
+    num_input_channels = 8
+    meta_model = FewShotClassifierPlasma(num_input_channels, args.k, fc_layer_size).to(device, dtype=torch.double)
 else:
     raise(ValueError('Unsupported dataset'))
 
@@ -79,7 +86,6 @@ evaluation_taskloader = DataLoader(
 # Training #
 ############
 print(f'Training MAML on {args.dataset}...')
-meta_model = FewShotClassifier(num_input_channels, args.k, fc_layer_size).to(device, dtype=torch.double)
 meta_optimiser = torch.optim.Adam(meta_model.parameters(), lr=args.meta_lr)
 loss_fn = nn.CrossEntropyLoss().to(device)
 
