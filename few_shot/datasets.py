@@ -175,6 +175,86 @@ class MiniImageNet(Dataset):
         progress_bar.close()
         return images
 
+def CREATE_DUMMY_DF():
+    # Create dummy data
+    num_classes = 5
+    n_columns = 30872
+    n_rows = 1011
+    dummy_data = np.random.rand(n_rows, n_columns)
+    dummy_classes = np.random.randint(num_classes, size=(n_rows, 1))
+    df = pd.DataFrame(data=dummy_data).astype('float32')
+    df = df.assign(class_id=dummy_classes)
+
+    # Assign an id to each sample
+    df = df.assign(id=df.index.values)
+
+    from sklearn.model_selection import train_test_split
+    train, test = train_test_split(df, test_size=0.2, stratify=df['class_id'])
+    df = df.assign(train=df['id'].isin(list(train.id.values)))
+
+    # Save to csv
+    # df.to_csv(os.path.join(DATA_PATH, 'dummy.csv'), index=True)
+    compression_opts = dict(method='zip', archive_name='out.csv')
+    df.to_csv(os.path.join(DATA_PATH, 'dummy.zip'), index=False, compression=compression_opts)
+
+class PlasmaDataset(Dataset):
+    def __init__(self, subset):
+        """Plasma dataset for debugging/testing purposes
+
+        A sample from the DummyDataset has (n_features + 1) features. The first feature is the index of the sample
+        in the data and the remaining features are the class index.
+
+        # Arguments
+            samples_per_class: Number of samples per class in the dataset
+            n_classes: Number of distinct classes in the dataset
+            n_features: Number of extra features each sample should have.
+        """
+
+
+        if subset not in ('background', 'evaluation'):
+            raise(ValueError, 'subset must be one of (background, evaluation)')
+        self.subset = subset
+
+        # Load data
+        self.df_main = pd.read_csv(os.path.join(DATA_PATH, 'dummy.zip'))
+
+        # extract train/evaluation
+        self.df = self.index_subset(self.subset)
+
+    def __getitem__(self, item):
+        label = self.df['class_id'].iloc[item].astype(np.int32)
+        data = self.df.drop(['class_id', 'id', 'train'], axis=1).iloc[item].to_numpy().astype(np.float32)
+
+        # We need to reshape the data
+        # Targeted shape (8, 3859) we MUST set order='F' instead of the default order='C'
+        data_ = np.reshape(data[:, np.newaxis], (8, int(data.shape[0] / 8)), order='F')
+
+        return torch.from_numpy(data_), label
+
+    def __len__(self):
+        return len(self.df)
+
+    def num_classes(self):
+        return len(self.df['class_name'].unique())
+
+    def index_subset(self, subset):
+        """Index a subset by looping through all of its files and recording relevant information.
+
+        # Arguments
+            subset: Name of the subset
+
+        # Returns
+            A list of dicts containing information about all the image files in a particular subset of the
+            miniImageNet dataset
+        """
+        images = []
+        print('Indexing {}...'.format(subset))
+
+        if subset == 'background':
+            return self.df_main[self.df_main['train'] == True]
+        else:
+            return self.df_main[self.df_main['train'] == False]
+
 
 class DummyDataset(Dataset):
     def __init__(self, samples_per_class=10, n_classes=10, n_features=1):

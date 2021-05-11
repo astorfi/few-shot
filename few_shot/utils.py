@@ -40,6 +40,7 @@ def setup_dirs():
     mkdir(PATH + '/models/proto_nets')
     mkdir(PATH + '/models/matching_nets')
     mkdir(PATH + '/models/maml')
+    mkdir(PATH + '/data')
 
 
 def pairwise_distances(x: torch.Tensor,
