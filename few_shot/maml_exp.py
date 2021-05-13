@@ -75,14 +75,14 @@ background_taskloader = DataLoader(
     background,
     batch_sampler=NShotTaskSampler(background, args.epoch_len, n=args.n, k=args.k, q=args.q,
                                    num_tasks=args.meta_batch_size),
-    num_workers=8
+    num_workers=0
 )
 evaluation = dataset_class('evaluation')
 evaluation_taskloader = DataLoader(
     evaluation,
     batch_sampler=NShotTaskSampler(evaluation, args.eval_batches, n=args.n, k=args.k, q=args.q,
                                    num_tasks=args.meta_batch_size),
-    num_workers=8
+    num_workers=0
 )
 
 

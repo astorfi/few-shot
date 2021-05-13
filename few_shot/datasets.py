@@ -177,7 +177,7 @@ class MiniImageNet(Dataset):
 
 def CREATE_DUMMY_DF():
     # Create dummy data
-    num_classes = 5
+    num_classes = 20
     n_columns = 30872
     n_rows = 1011
     dummy_data = np.random.rand(n_rows, n_columns)
@@ -186,11 +186,11 @@ def CREATE_DUMMY_DF():
     df = df.assign(class_id=dummy_classes)
 
     # Assign an id to each sample
-    df = df.assign(id=df.index.values)
+    #df = df.assign(id=df.index.values)
 
     from sklearn.model_selection import train_test_split
     train, test = train_test_split(df, test_size=0.2, stratify=df['class_id'])
-    df = df.assign(train=df['id'].isin(list(train.id.values)))
+    df = df.assign(train=df.index.isin(list(train.index.values)))
 
     # Save to csv
     # df.to_csv(os.path.join(DATA_PATH, 'dummy.csv'), index=True)
@@ -210,7 +210,6 @@ class PlasmaDataset(Dataset):
             n_features: Number of extra features each sample should have.
         """
 
-
         if subset not in ('background', 'evaluation'):
             raise(ValueError, 'subset must be one of (background, evaluation)')
         self.subset = subset
@@ -220,6 +219,12 @@ class PlasmaDataset(Dataset):
 
         # extract train/evaluation
         self.df = self.index_subset(self.subset)
+
+        # Reset indexes
+        self.df = self.df.reset_index(drop=True)
+
+        # Assign an id
+        self.df = self.df.assign(id=self.df.index.values)
 
     def __getitem__(self, item):
         label = self.df['class_id'].iloc[item].astype(np.int32)
