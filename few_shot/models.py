@@ -149,27 +149,25 @@ class FewShotClassifierPlasma(nn.Module):
             final_layer_size: 64 for Omniglot, 1600 for miniImageNet
         """
         super(FewShotClassifierPlasma, self).__init__()
-        kernel_size = 5
-        self.conv1 = nn.Conv1d(num_input_channels, 1, kernel_size=kernel_size, padding=int(np.floor(kernel_size / 2)))
+        self.kernel_size = 5
+        self.conv1 = nn.Conv1d(num_input_channels, 1, kernel_size=self.kernel_size, padding=int(np.floor(self.kernel_size / 2)))
         self.fc1 = nn.Linear(3859, 2000)
-        self.fc2 = nn.Linear(2000, k_way)
-
         self.logits = nn.Linear(final_layer_size, k_way)
 
     def forward(self, x):
         x = F.selu(self.conv1(x))
         x = x.view(-1, x.shape[2])
         x = F.selu(self.fc1(x))
-        x = self.fc2(x)
+        x = self.logits(x)
         return x
 
     def functional_forward(self, x, weights):
         """Applies the same forward pass using PyTorch functional operators using a specified set of weights."""
 
-        x = F.selu(F.conv1d(x, weights[f'conv1.0.weight'], weights[f'conv1.0.bias']))
+        x = F.selu(F.conv1d(x, weights[f'conv1.weight'], weights[f'conv1.bias'], padding=int(np.floor(self.kernel_size / 2))))
         x = x.view(-1, x.shape[2])
-        x = F.linear(x, weights['logits1.weight'], weights['logits1.bias'])
-        x = F.linear(x, weights['logits2.weight'], weights['logits2.bias'])
+        x = F.linear(x, weights['fc1.weight'], weights['fc1.bias'])
+        x = F.linear(x, weights['logits.weight'], weights['logits.bias'])
 
         return x
 

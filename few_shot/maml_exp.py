@@ -24,7 +24,7 @@ torch.backends.cudnn.benchmark = True
 # Parameters #
 ##############
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', default='Plasma', help="dataset: {'omniglot', 'miniImageNet'}. Whether to use the Omniglot or miniImagenet dataset")
+parser.add_argument('--dataset', default='Plasma', help="dataset: {'omniglot', 'miniImageNet', 'Plasma'}. Whether to use the Omniglot or miniImagenet dataset")
 parser.add_argument('--n', default=1, type=int)
 parser.add_argument('--k', default=5, type=int)
 parser.add_argument('--q', default=1, type=int)  # Number of examples per class to calculate meta gradients with
@@ -68,7 +68,7 @@ print(param_str)
 ###################
 
 # Create dummy data if does not exist
-# CREATE_DUMMY_DF()
+CREATE_DUMMY_DF()
 
 background = dataset_class('background')
 background_taskloader = DataLoader(
@@ -100,7 +100,10 @@ def prepare_meta_batch(n, k, q, meta_batch_size):
         # Reshape to `meta_batch_size` number of tasks. Each task contains
         # n*k support samples to train the fast model on and q*k query samples to
         # evaluate the fast model on and generate meta-gradients
-        x = x.reshape(meta_batch_size, n*k + q*k, num_input_channels, x.shape[-2], x.shape[-1])
+        if num_input_channels == 1:
+            x = x.reshape(meta_batch_size, n*k + q*k, num_input_channels, x.shape[-2], x.shape[-1])
+        else:
+            x = x.reshape(meta_batch_size, n * k + q * k, num_input_channels, x.shape[-1])
         # Move to device
         x = x.double().to(device)
         # Create label

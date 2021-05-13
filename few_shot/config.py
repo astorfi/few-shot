@@ -4,7 +4,7 @@ import os
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 PATH = os.path.expanduser('~/exp/few-shot')
-DATA_PATH = os.path.expanduser('~/exp/few-shot/data')
+DATA_PATH = os.path.expanduser('~/data')
 
 EPSILON = 1e-8
 

@@ -195,7 +195,7 @@ def CREATE_DUMMY_DF():
     # Save to csv
     # df.to_csv(os.path.join(DATA_PATH, 'dummy.csv'), index=True)
     compression_opts = dict(method='zip', archive_name='out.csv')
-    df.to_csv(os.path.join(DATA_PATH, 'dummy.zip'), index=False, compression=compression_opts)
+    df.to_csv(os.path.join(DATA_PATH, 'Plasma.zip'), index=False, compression=compression_opts)
 
 class PlasmaDataset(Dataset):
     def __init__(self, subset):
@@ -215,7 +215,7 @@ class PlasmaDataset(Dataset):
         self.subset = subset
 
         # Load data
-        self.df_main = pd.read_csv(os.path.join(DATA_PATH, 'dummy.zip'))
+        self.df_main = pd.read_csv(os.path.join(DATA_PATH, 'Plasma.zip'))
 
         # extract train/evaluation
         self.df = self.index_subset(self.subset)
