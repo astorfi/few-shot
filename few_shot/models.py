@@ -151,22 +151,28 @@ class FewShotClassifierPlasma(nn.Module):
         super(FewShotClassifierPlasma, self).__init__()
         self.kernel_size = 5
         self.conv1 = nn.Conv1d(num_input_channels, 1, kernel_size=self.kernel_size, padding=int(np.floor(self.kernel_size / 2)))
+        self.bn1 = nn.BatchNorm1d(1)
         self.fc1 = nn.Linear(3859, 2000)
+        self.bn2 = nn.BatchNorm1d(num_features=2000)
         self.logits = nn.Linear(final_layer_size, k_way)
 
     def forward(self, x):
-        x = F.selu(self.conv1(x))
+        x = F.selu(self.bn1(self.conv1(x)))
         x = x.view(-1, x.shape[2])
-        x = F.selu(self.fc1(x))
+        x = F.selu(self.bn2(self.fc1(x)))
         x = self.logits(x)
         return x
 
     def functional_forward(self, x, weights):
         """Applies the same forward pass using PyTorch functional operators using a specified set of weights."""
 
-        x = F.selu(F.conv1d(x, weights[f'conv1.weight'], weights[f'conv1.bias'], padding=int(np.floor(self.kernel_size / 2))))
+        x = F.conv1d(x, weights[f'conv1.weight'], weights[f'conv1.bias'], padding=int(np.floor(self.kernel_size / 2)))
+        x = F.batch_norm(x, running_mean=None, running_var=None, weight=weights[f'bn1.weight'], bias=weights[f'bn1.bias'], training=True)
+        x = F.selu(x)
         x = x.view(-1, x.shape[2])
         x = F.linear(x, weights['fc1.weight'], weights['fc1.bias'])
+        x = F.batch_norm(x, running_mean=None, running_var=None, weight=weights[f'bn2.weight'],
+                         bias=weights[f'bn2.bias'], training=True)
         x = F.linear(x, weights['logits.weight'], weights['logits.bias'])
 
         return x
