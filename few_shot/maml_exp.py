@@ -15,8 +15,8 @@ from utils import setup_dirs
 from config import PATH
 
 setup_dirs()
-assert torch.cuda.is_available()
-device = torch.device('cuda')
+print('CUDA is available:', torch.cuda.is_available())
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 torch.backends.cudnn.benchmark = True
 
 
@@ -24,7 +24,7 @@ torch.backends.cudnn.benchmark = True
 # Parameters #
 ##############
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', default='Plasma', help="dataset: {'omniglot', 'miniImageNet', 'Plasma'}. Whether to use the Omniglot or miniImagenet dataset")
+parser.add_argument('--dataset', default='omniglot', help="dataset: {'omniglot', 'miniImageNet', 'Plasma'}. Whether to use the Omniglot or miniImagenet dataset")
 parser.add_argument('--n', default=1, type=int)
 parser.add_argument('--k', default=5, type=int)
 parser.add_argument('--q', default=1, type=int)  # Number of examples per class to calculate meta gradients with
@@ -68,7 +68,7 @@ print(param_str)
 ###################
 
 # Create dummy data if does not exist
-CREATE_DUMMY_DF()
+# CREATE_DUMMY_DF()
 
 background = dataset_class('background')
 background_taskloader = DataLoader(
@@ -107,7 +107,7 @@ def prepare_meta_batch(n, k, q, meta_batch_size):
         # Move to device
         x = x.double().to(device)
         # Create label
-        y = create_nshot_task_label(k, q).cuda().repeat(meta_batch_size)
+        y = create_nshot_task_label(k, q).to(device).repeat(meta_batch_size)
         return x, y
 
     return prepare_meta_batch_
